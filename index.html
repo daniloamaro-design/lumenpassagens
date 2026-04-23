@@ -8,149 +8,73 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Estilos idênticos ao Lumen Estoque para manter o padrão */
     :root {
-      --lumen: #003875;
-      --lumen-mid: #1a4d85;
-      --lumen-lt: #eef4fb;
-      --accent: #FFD700;
-      --success: #28a745;
-      --danger: #dc3545;
-      --text: #333;
-      --border: #dee2e6;
-      --bg: #f4f7f9;
+      --lumen: #003875; --lumen-mid: #1a4d85; --lumen-lt: #eef4fb;
+      --accent: #FFD700; --success: #28a745; --danger: #dc3545;
+      --text: #333; --border: #dee2e6; --bg: #f4f7f9;
     }
-
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-
-    /* Sidebar Estilo Lumen Estoque */
-    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; }
-    .brand-title { color: var(--lumen); font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .sidebar-nav { flex: 1; padding: 16px; overflow-y: auto; }
-    .nav-group-title { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; margin: 20px 0 8px 12px; }
-    .nav-link { display: flex; align-items: center; padding: 12px 16px; color: #555; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 4px; border: none; background: none; width: 100%; cursor: pointer; transition: 0.2s; }
-    .nav-link:hover { background: var(--lumen-lt); color: var(--lumen); }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; margin: 0; }
+    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; color: var(--lumen); font-weight: 800; }
+    .nav-link { padding: 12px 16px; display: block; color: #555; text-decoration: none; border-radius: 8px; margin: 4px 16px; cursor: pointer; border: none; background: none; text-align: left; }
     .nav-link.active { background: var(--lumen); color: white; }
-
-    /* Conteúdo Principal */
     .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .top-bar { height: 64px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
-    .page-container { flex: 1; padding: 32px; overflow-y: auto; }
-    .page { display: none; }
-    .page.active { display: block; animation: fadeIn 0.3s ease; }
-
-    /* Cards e Forms */
-    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 13px; font-weight: 600; color: #666; }
-    input, select, textarea { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
-    input:focus { border-color: var(--lumen); box-shadow: 0 0 0 3px rgba(0,56,117,0.1); }
-
-    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-primary { background: var(--lumen); color: white; }
-    .btn-primary:hover { background: var(--lumen-mid); }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th { text-align: left; padding: 12px 16px; background: var(--lumen-lt); color: var(--lumen); font-size: 12px; text-transform: uppercase; }
-    td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .page-container { padding: 32px; overflow-y: auto; flex: 1; }
+    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .page { display: none; } .page.active { display: block; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+    .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; background: var(--lumen); color: white; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="brand-title">LUMEN PASSAGENS</div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-group-title">Operacional</div>
+    <div class="sidebar-header">LUMEN PASSAGENS</div>
+    <nav style="margin-top: 20px;">
       <button class="nav-link active" onclick="goPage('solicitar')">Nova Solicitação</button>
       <button class="nav-link" onclick="goPage('minhas')">Minhas Viagens</button>
-      
-      <div id="admin-menu" class="hidden">
-        <div class="nav-group-title">Administrativo</div>
-        <button class="nav-link" onclick="goPage('gestao')">Gestão de Aprovações</button>
-        <button class="nav-link" onclick="goPage('fornecedores')">Fornecedores</button>
-        <button class="nav-link" onclick="goPage('indicadores')">Indicadores</button>
-      </div>
+      <button class="nav-link" onclick="goPage('gestao')">Gestão Admin</button>
+      <button class="nav-link" onclick="goPage('indicadores')">Indicadores</button>
     </nav>
   </aside>
 
   <main class="main-content">
-    <header class="top-bar">
-      <h2 id="page-title" style="font-size: 18px;">Nova Solicitação</h2>
-      <div id="user-info" style="font-size: 14px; font-weight: 600; color: var(--lumen);"></div>
-    </header>
-
     <div class="page-container">
       
       <section id="page-solicitar" class="page active">
         <div class="card">
+          <h2 style="margin-top:0">Nova Solicitação</h2>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Tipo de Transporte</label>
-              <select id="f-tipo">
-                <option value="Avião">Avião</option>
-                <option value="Ônibus">Ônibus</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Passageiro</label>
-              <input type="text" id="f-passageiro" placeholder="Nome Completo">
-            </div>
-            <div class="form-group">
-              <label>Origem</label>
-              <input type="text" id="f-origem" placeholder="Ex: Fortaleza - CE">
-            </div>
-            <div class="form-group">
-              <label>Destino</label>
-              <input type="text" id="f-destino" placeholder="Ex: São Paulo - SP">
-            </div>
-            <div class="form-group">
-              <label>Data de Saída</label>
-              <input type="date" id="f-data">
-            </div>
-            <div class="form-group">
-              <label>Motivo</label>
-              <select id="f-motivo">
-                <option value="CDTJ">CDTJ</option>
-                <option value="Transferência">Transferência</option>
-                <option value="Visita Família">Visita Família</option>
-                <option value="Selo Lumen">Selo Lumen</option>
-              </select>
-            </div>
+            <div class="form-group"><label>Passageiro</label><input type="text" id="f-nome"></div>
+            <div class="form-group"><label>Origem</label><input type="text" id="f-origem"></div>
+            <div class="form-group"><label>Destino</label><input type="text" id="f-destino"></div>
+            <div class="form-group"><label>Data</label><input type="date" id="f-data"></div>
           </div>
-          <button class="btn btn-primary" style="margin-top: 24px;" onclick="salvarSolicitacao()">Enviar Solicitação</button>
+          <button class="btn" style="margin-top:20px" onclick="salvar()">Enviar</button>
         </div>
       </section>
 
-      <section id="page-fornecedores" class="page">
+      <section id="page-gestao" class="page">
         <div class="card">
-          <div class="form-grid" style="align-items: end;">
-            <div class="form-group">
-              <label>Nome do Fornecedor</label>
-              <input type="text" id="forn-nome" placeholder="Ex: Latam, Gontijo...">
-            </div>
-            <button class="btn btn-primary" onclick="salvarFornecedor()">Cadastrar</button>
-          </div>
-          <table id="tabela-fornecedores">
-            <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
-            <tbody></tbody>
-          </table>
+          <h2>Aprovações Pendentes</h2>
+          <div id="lista-pendentes">Carregando...</div>
         </div>
       </section>
 
-      <section id="page-minhas" class="page"><div class="card">Carregando viagens...</div></section>
-      <section id="page-gestao" class="page"><div class="card">Aguardando aprovações...</div></section>
-      <section id="page-indicadores" class="page"><div class="card"><canvas id="chartCustos"></canvas></div></section>
+      <section id="page-indicadores" class="page">
+        <div class="card">
+          <h2>Resumo Financeiro</h2>
+          <div id="indicadores-vazios">Cadastre passagens para ver os gráficos.</div>
+          <canvas id="meuGrafico"></canvas>
+        </div>
+      </section>
 
     </div>
   </main>
@@ -168,91 +92,54 @@
     firebase.initializeApp(FIREBASE_CONFIG);
     const db = firebase.firestore();
 
-    // Navegação
     function goPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       document.getElementById('page-' + id).classList.add('active');
       event.currentTarget.classList.add('active');
-      document.getElementById('page-title').innerText = event.currentTarget.innerText;
     }
 
-    // Função de correção para o erro de 'filter'
-    function safeUpdateBadge(data) {
-      if (!data || !Array.isArray(data)) return; // Trava de segurança
-      const pendentes = data.filter(item => item && item.status === 'Pendente');
-      console.log('Pendentes atualizados:', pendentes.length);
+    // --- PROTEÇÃO CONTRA O ERRO DE FILTER ---
+    function updateBadge(dados) {
+      // Se dados for null, undefined ou não for array, sai da função sem dar erro
+      if (!dados || !Array.isArray(dados)) return;
+
+      try {
+        const pendentes = dados.filter(item => item && item.status === 'Pendente');
+        console.log("Pendentes encontrados:", pendentes.length);
+      } catch (e) {
+        console.error("Erro ao filtrar badges:", e);
+      }
     }
 
-    async function salvarSolicitacao() {
-      const btn = event.target;
-      btn.disabled = true;
-      
-      const dados = {
-        tipo: document.getElementById('f-tipo').value,
-        passageiro: document.getElementById('f-passageiro').value,
+    async function salvar() {
+      const p = {
+        nome: document.getElementById('f-nome').value,
         origem: document.getElementById('f-origem').value,
         destino: document.getElementById('f-destino').value,
         data: document.getElementById('f-data').value,
-        motivo: document.getElementById('f-motivo').value,
         status: 'Pendente',
-        criadoEm: new Date().toISOString()
+        valor: 0,
+        criadoEm: new Date()
       };
-
-      try {
-        await db.collection('passagens').add(dados);
-        alert('Solicitação enviada!');
-        document.querySelectorAll('input').forEach(i => i.value = '');
-      } catch (e) {
-        alert('Erro ao salvar.');
-      } finally {
-        btn.disabled = false;
-      }
+      await db.collection('passagens').add(p);
+      alert('Enviado!');
+      location.reload(); // Recarrega para limpar tudo
     }
 
-    // Gestão de Fornecedores (Para evitar erro ao excluir)
-    async function salvarFornecedor() {
-      const nome = document.getElementById('forn-nome').value;
-      if(!nome) return;
-      await db.collection('fornecedores_viagens').add({ nome });
-      document.getElementById('forn-nome').value = '';
-      carregarFornecedores();
-    }
-
-    async function carregarFornecedores() {
-      const snap = await db.collection('fornecedores_viagens').get();
-      const tbody = document.querySelector('#tabela-fornecedores tbody');
-      tbody.innerHTML = '';
+    // Escuta os dados em tempo real com proteção
+    db.collection('passagens').onSnapshot(snap => {
+      const lista = [];
+      snap.forEach(doc => lista.push({ id: doc.id, ...doc.data() }));
       
-      // Verificação de segurança (o que causava o erro anterior)
-      if (snap.empty) {
-        tbody.innerHTML = '<tr><td colspan="2">Nenhum fornecedor cadastrado.</td></tr>';
-        return;
+      // Só chama as funções se houver lista
+      if (lista.length >= 0) {
+        updateBadge(lista);
       }
+    }, err => {
+      console.log("Aguardando permissões ou dados...");
+    });
 
-      snap.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.nome}</td>
-            <td><button class="btn" style="color:red" onclick="removerFornecedor('${doc.id}')">Excluir</button></td>
-          </tr>`;
-      });
-    }
-
-    async function removerFornecedor(id) {
-      if(!confirm('Deseja excluir este fornecedor?')) return;
-      await db.collection('fornecedores_viagens').doc(id).delete();
-      carregarFornecedores(); // Recarrega com segurança
-    }
-
-    // Inicialização do Admin (Exemplo manual para você testar)
-    // Para ver o menu admin, você pode rodar no console: document.getElementById('admin-menu').classList.remove('hidden')
-    window.onload = () => {
-      carregarFornecedores();
-      // Simulação de Admin para sua apresentação
-      document.getElementById('admin-menu').classList.remove('hidden');
-    };
   </script>
 </body>
 </html>
