@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lumen Passagens — Gestão de Viagens</title>
+  <title>Lumen Passagens — Gestão Profissional</title>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -12,104 +12,118 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
-    /* Estilos idênticos ao Lumen Logística para manter a identidade da Obra Lumen */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Estilos Replicados do Lumen Estoque */
     :root {
       --lumen: #003875; --lumen-mid: #1a4d85; --lumen-lt: #eef4fb;
       --accent: #FFD700; --success: #28a745; --danger: #dc3545;
-      --warning: #ffc107; --text: #333; --border: #dee2e6; --bg: #f4f7f9;
+      --text: #333; --border: #dee2e6; --bg: #f4f7f9;
     }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
 
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-
-    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; }
-    .brand-title { color: var(--lumen); font-size: 1.2rem; font-weight: 800; }
-    
-    .nav-link { display: flex; align-items: center; padding: 12px 16px; color: #555; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin: 4px 16px; cursor: pointer; border: none; background: none; transition: 0.2s; }
+    /* Sidebar */
+    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; color: var(--lumen); font-weight: 800; font-size: 1.2rem; }
+    .nav-group { padding: 10px 0; }
+    .nav-title { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; margin: 15px 25px 5px; }
+    .nav-link { padding: 12px 25px; display: flex; align-items: center; color: #555; text-decoration: none; cursor: pointer; transition: 0.2s; border: none; background: none; width: 100%; font-size: 14px; }
     .nav-link:hover { background: var(--lumen-lt); color: var(--lumen); }
     .nav-link.active { background: var(--lumen); color: white; }
 
+    /* Content Area */
     .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .top-bar { height: 64px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
-    .page-container { flex: 1; padding: 32px; overflow-y: auto; }
-    .page { display: none; }
-    .page.active { display: block; animation: fadeIn 0.3s ease; }
-
-    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .top-bar { height: 64px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+    .content-scroll { flex: 1; padding: 30px; overflow-y: auto; }
+    
+    /* UI Components */
+    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
     label { font-size: 13px; font-weight: 600; color: #666; }
-    input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+    input:focus { border-color: var(--lumen); }
     
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .status-pendente { background: var(--warning); color: #000; }
-    .status-aprovado { background: var(--success); color: #fff; }
-
-    .btn { padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .btn-primary { background: var(--lumen); color: white; }
+    .btn-success { background: var(--success); color: white; }
     
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px; background: var(--lumen-lt); color: var(--lumen); font-size: 12px; text-transform: uppercase; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+    .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .status-pendente { background: #fff3cd; color: #856404; }
+    .status-aprovado { background: #d4edda; color: #155724; }
+    
+    .hidden { display: none; }
+    #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 9999; }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <div class="sidebar-header"><div class="brand-title">LUMEN PASSAGENS</div></div>
-    <nav style="margin-top:20px">
-      <button class="nav-link active" onclick="goPage('nova')">Nova Solicitação</button>
-      <button class="nav-link" onclick="goPage('minhas')">Minhas Viagens</button>
-      <button class="nav-link" id="btn-gestao" onclick="goPage('gestao')">Gestão (Admin)</button>
-      <button class="nav-link" id="btn-indicadores" onclick="goPage('indicadores')">Indicadores</button>
-      <button class="nav-link" style="margin-top:auto; color:red" onclick="logout()">Sair</button>
-    </nav>
+    <div class="sidebar-header">LUMEN PASSAGENS</div>
+    <div class="nav-group">
+      <div class="nav-title">Operacional</div>
+      <button class="nav-link active" onclick="showTab('tab-solicitar')">Nova Solicitação</button>
+      <button class="nav-link" onclick="showTab('tab-minhas')">Minhas Viagens</button>
+      
+      <div class="nav-title">Administrativo</div>
+      <button class="nav-link" onclick="showTab('tab-gestao')">Gestão Admin</button>
+      <button class="nav-link" onclick="showTab('tab-fornecedores')">Fornecedores</button>
+      <button class="nav-link" onclick="showTab('tab-indicadores')">Indicadores</button>
+    </div>
   </aside>
 
   <main class="main-content">
     <header class="top-bar">
-      <h2 id="page-title">Nova Solicitação</h2>
-      <div id="user-display" style="font-weight:bold; color:var(--lumen)"></div>
+      <h2 id="tab-title">Nova Solicitação</h2>
+      <div id="user-info" style="font-weight:600; color:var(--lumen)">Carregando...</div>
     </header>
 
-    <div class="page-container">
-      <section id="page-nova" class="page active">
+    <div class="content-scroll">
+      
+      <section id="tab-solicitar" class="tab-content active">
         <div class="card">
-          <div class="form-grid">
-            <div class="form-group"><label>Passageiro</label><input type="text" id="p-nome"></div>
-            <div class="form-group"><label>Transporte</label><select id="p-tipo"><option>Avião</option><option>Ônibus</option></select></div>
-            <div class="form-group"><label>Origem</label><input type="text" id="p-origem"></div>
-            <div class="form-group"><label>Destino</label><input type="text" id="p-destino"></div>
-            <div class="form-group"><label>Data Ida</label><input type="date" id="p-data"></div>
-            <div class="form-group"><label>Motivo</label><select id="p-motivo"><option>CDTJ</option><option>Selo Lumen</option><option>Transferência</option></select></div>
+          <div class="grid">
+            <div class="form-group"><label>Nome do Passageiro</label><input type="text" id="sol-nome"></div>
+            <div class="form-group"><label>Tipo</label><select id="sol-tipo"><option>Avião</option><option>Ônibus</option></select></div>
+            <div class="form-group"><label>Origem</label><input type="text" id="sol-origem"></div>
+            <div class="form-group"><label>Destino</label><input type="text" id="sol-destino"></div>
+            <div class="form-group"><label>Data da Viagem</label><input type="date" id="sol-data"></div>
+            <div class="form-group"><label>Motivo</label><select id="sol-motivo">
+              <option>CDTJ</option><option>Transferência</option><option>Selo Lumen</option><option>Retiro</option>
+            </select></div>
           </div>
-          <button class="btn btn-primary" style="margin-top:20px" onclick="salvarViagem()">Enviar para Aprovação</button>
+          <button class="btn btn-primary" style="margin-top:20px" onclick="createRequest()">Enviar para Aprovação</button>
         </div>
       </section>
 
-      <section id="page-gestao" class="page">
-        <div class="card" style="overflow-x:auto">
-          <table style="width:100%; border-collapse:collapse">
+      <section id="tab-gestao" class="tab-content hidden">
+        <div class="card">
+          <table>
             <thead>
-              <tr style="text-align:left; background:var(--lumen-lt)">
-                <th style="padding:12px">Data</th><th style="padding:12px">Passageiro</th><th>Rota</th><th>Status</th><th>Ações</th>
-              </tr>
+              <tr><th>Data</th><th>Passageiro</th><th>Rota</th><th>Status</th><th>Ações</th></tr>
             </thead>
-            <tbody id="lista-gestao"></tbody>
+            <tbody id="table-admin"></tbody>
           </table>
         </div>
       </section>
 
-      <section id="page-indicadores" class="page">
-        <div class="form-grid">
-          <div class="card"><h3>Gastos por Motivo</h3><canvas id="chartMotivo"></canvas></div>
-          <div class="card"><h3>Gastos Mensais</h3><canvas id="chartMensal"></canvas></div>
+      <section id="tab-indicadores" class="tab-content hidden">
+        <div class="grid">
+          <div class="card"><canvas id="chartStatus"></canvas></div>
+          <div class="card"><canvas id="chartFinanceiro"></canvas></div>
         </div>
       </section>
+
     </div>
   </main>
 
+  <div id="toast"></div>
+
   <script>
-    // CONFIGURAÇÃO DO FIREBASE
+    // 1. Configuração Firebase
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyCJrEyqTInN2YzEwO1eOFibOTpj2Tj-LCQ",
       authDomain: "automacao-logistica2040.firebaseapp.com",
@@ -121,90 +135,105 @@
     firebase.initializeApp(FIREBASE_CONFIG);
     const db = firebase.firestore();
 
-    // VARIÁVEIS GLOBAIS DE SEGURANÇA
-    let USUARIO_LOGADO = null;
-    let TODAS_PASSAGENS = [];
+    // 2. Global State (O segredo para evitar erros de undefined)
+    let ALL_DATA = [];
+    let CURRENT_USER = { nome: "Danilo Amaro", regra: "admin" }; // Pegar do Auth depois
 
-    // NAVEGAÇÃO
-    function goPage(id) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // 3. UI Logic (Navegação igual ao Estoque)
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      document.getElementById('page-' + id).classList.add('active');
+      document.getElementById(tabId).classList.remove('hidden');
       event.currentTarget.classList.add('active');
-      document.getElementById('page-title').innerText = event.currentTarget.innerText;
+      document.getElementById('tab-title').innerText = event.currentTarget.innerText;
     }
 
-    // SALVAR VIAGEM
-    async function salvarViagem() {
-      const nova = {
-        passageiro: document.getElementById('p-nome').value,
-        tipo: document.getElementById('p-tipo').value,
-        origem: document.getElementById('p-origem').value,
-        destino: document.getElementById('p-destino').value,
-        data: document.getElementById('p-data').value,
-        motivo: document.getElementById('p-motivo').value,
-        status: 'Pendente',
-        valor: 0,
-        solicitante: USUARIO_LOGADO ? USUARIO_LOGADO.email : 'anônimo',
-        criadoEm: new Date().toISOString()
-      };
-
-      if(!nova.passageiro || !nova.data) return alert('Preencha os campos obrigatórios!');
-
-      await db.collection('passagens').add(nova);
-      alert('Solicitação enviada com sucesso!');
-      location.reload();
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 3000);
     }
 
-    // CARREGAR DADOS EM TEMPO REAL (BLINDADO CONTRA ERROS)
-    function initData() {
+    // 4. Data Logic (BLINDADO)
+    function init() {
+      document.getElementById('user-info').innerText = CURRENT_USER.nome;
+      
+      // Listener em Tempo Real (Escuta alterações no Firebase)
       db.collection('passagens').orderBy('criadoEm', 'desc').onSnapshot(snap => {
-        TODAS_PASSAGENS = [];
-        snap.forEach(doc => TODAS_PASSAGENS.push({id: doc.id, ...doc.data()}));
+        const list = [];
+        snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
         
-        renderizarGestao();
-        renderizarGraficos();
-      }, err => console.log("Erro ao ler dados: ", err));
+        ALL_DATA = list; // Atualiza estado global
+        renderAll();
+      }, err => {
+        showToast("Erro de permissão no Firebase");
+      });
     }
 
-    function renderizarGestao() {
-      const tbody = document.getElementById('lista-gestao');
+    function renderAll() {
+      renderAdminTable();
+      renderCharts();
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('table-admin');
       if(!tbody) return;
       tbody.innerHTML = '';
 
-      // PROTEÇÃO: Só filtra se houver dados
-      const dados = TODAS_PASSAGENS || [];
+      // PROTEÇÃO CONTRA FILTRO EM LISTA VAZIA
+      if (ALL_DATA.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma passagem encontrada.</td></tr>';
+        return;
+      }
 
-      dados.forEach(p => {
+      ALL_DATA.forEach(item => {
         tbody.innerHTML += `
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px">${new Date(p.data).toLocaleDateString('pt-BR')}</td>
-            <td>${p.passageiro}</td>
-            <td>${p.origem} > ${p.destino}</td>
-            <td><span class="status-badge status-${p.status.toLowerCase()}">${p.status}</span></td>
+          <tr>
+            <td>${new Date(item.data).toLocaleDateString('pt-BR')}</td>
+            <td><b>${item.passageiro || '---'}</b></td>
+            <td>${item.origem} → ${item.destino}</td>
+            <td><span class="status-badge status-${item.status.toLowerCase()}">${item.status}</span></td>
             <td>
-              <button class="btn" onclick="alterarStatus('${p.id}', 'Aprovado')" style="color:green">✔</button>
-              <button class="btn" onclick="alterarStatus('${p.id}', 'Reprovado')" style="color:red">✖</button>
+              <button class="btn btn-success" onclick="updateStatus('${item.id}', 'Aprovado')" style="padding:5px 10px">✔</button>
             </td>
           </tr>
         `;
       });
     }
 
-    async function alterarStatus(id, novoStatus) {
-      const valor = novoStatus === 'Aprovado' ? prompt('Insira o valor da passagem:') : 0;
-      await db.collection('passagens').doc(id).update({ 
-        status: novoStatus,
-        valor: Number(valor) || 0
-      });
+    async function createRequest() {
+      const btn = event.target; btn.disabled = true;
+      const doc = {
+        passageiro: document.getElementById('sol-nome').value,
+        tipo: document.getElementById('sol-tipo').value,
+        origem: document.getElementById('sol-origem').value,
+        destino: document.getElementById('sol-destino').value,
+        data: document.getElementById('sol-data').value,
+        motivo: document.getElementById('sol-motivo').value,
+        status: 'Pendente',
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection('passagens').add(doc);
+        showToast("Solicitação enviada!");
+        document.querySelectorAll('input').forEach(i => i.value = '');
+      } catch(e) {
+        showToast("Erro ao salvar");
+      } finally { btn.disabled = false; }
     }
 
-    function renderizarGraficos() {
-      // Aqui entraria a lógica de Chart.js igual ao seu sistema de logística
-      console.log("Indicadores prontos para processar", TODAS_PASSAGENS.length, "registros.");
+    async function updateStatus(id, status) {
+      await db.collection('passagens').doc(id).update({ status });
+      showToast("Status atualizado!");
     }
 
-    window.onload = initData;
+    function renderCharts() {
+      // Aqui você pode replicar os gráficos do seu outro index.html
+      console.log("Processando gráficos para", ALL_DATA.length, "itens");
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
