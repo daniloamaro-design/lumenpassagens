@@ -8,78 +8,108 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
-    /* Estilos idênticos ao Lumen Estoque para manter o padrão */
+    /* Estilos idênticos ao Lumen Logística para manter a identidade da Obra Lumen */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --lumen: #003875; --lumen-mid: #1a4d85; --lumen-lt: #eef4fb;
       --accent: #FFD700; --success: #28a745; --danger: #dc3545;
-      --text: #333; --border: #dee2e6; --bg: #f4f7f9;
+      --warning: #ffc107; --text: #333; --border: #dee2e6; --bg: #f4f7f9;
     }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; margin: 0; }
-    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; color: var(--lumen); font-weight: 800; }
-    .nav-link { padding: 12px 16px; display: block; color: #555; text-decoration: none; border-radius: 8px; margin: 4px 16px; cursor: pointer; border: none; background: none; text-align: left; }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+    .sidebar { width: 260px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); text-align: center; }
+    .brand-title { color: var(--lumen); font-size: 1.2rem; font-weight: 800; }
+    
+    .nav-link { display: flex; align-items: center; padding: 12px 16px; color: #555; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin: 4px 16px; cursor: pointer; border: none; background: none; transition: 0.2s; }
+    .nav-link:hover { background: var(--lumen-lt); color: var(--lumen); }
     .nav-link.active { background: var(--lumen); color: white; }
+
     .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .page-container { padding: 32px; overflow-y: auto; flex: 1; }
-    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .page { display: none; } .page.active { display: block; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
-    .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; background: var(--lumen); color: white; }
-    .hidden { display: none; }
+    .top-bar { height: 64px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+    .page-container { flex: 1; padding: 32px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+    .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 13px; font-weight: 600; color: #666; }
+    input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .status-pendente { background: var(--warning); color: #000; }
+    .status-aprovado { background: var(--success); color: #fff; }
+
+    .btn { padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: var(--lumen); color: white; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <div class="sidebar-header">LUMEN PASSAGENS</div>
-    <nav style="margin-top: 20px;">
-      <button class="nav-link active" onclick="goPage('solicitar')">Nova Solicitação</button>
+    <div class="sidebar-header"><div class="brand-title">LUMEN PASSAGENS</div></div>
+    <nav style="margin-top:20px">
+      <button class="nav-link active" onclick="goPage('nova')">Nova Solicitação</button>
       <button class="nav-link" onclick="goPage('minhas')">Minhas Viagens</button>
-      <button class="nav-link" onclick="goPage('gestao')">Gestão Admin</button>
-      <button class="nav-link" onclick="goPage('indicadores')">Indicadores</button>
+      <button class="nav-link" id="btn-gestao" onclick="goPage('gestao')">Gestão (Admin)</button>
+      <button class="nav-link" id="btn-indicadores" onclick="goPage('indicadores')">Indicadores</button>
+      <button class="nav-link" style="margin-top:auto; color:red" onclick="logout()">Sair</button>
     </nav>
   </aside>
 
   <main class="main-content">
+    <header class="top-bar">
+      <h2 id="page-title">Nova Solicitação</h2>
+      <div id="user-display" style="font-weight:bold; color:var(--lumen)"></div>
+    </header>
+
     <div class="page-container">
-      
-      <section id="page-solicitar" class="page active">
+      <section id="page-nova" class="page active">
         <div class="card">
-          <h2 style="margin-top:0">Nova Solicitação</h2>
           <div class="form-grid">
-            <div class="form-group"><label>Passageiro</label><input type="text" id="f-nome"></div>
-            <div class="form-group"><label>Origem</label><input type="text" id="f-origem"></div>
-            <div class="form-group"><label>Destino</label><input type="text" id="f-destino"></div>
-            <div class="form-group"><label>Data</label><input type="date" id="f-data"></div>
+            <div class="form-group"><label>Passageiro</label><input type="text" id="p-nome"></div>
+            <div class="form-group"><label>Transporte</label><select id="p-tipo"><option>Avião</option><option>Ônibus</option></select></div>
+            <div class="form-group"><label>Origem</label><input type="text" id="p-origem"></div>
+            <div class="form-group"><label>Destino</label><input type="text" id="p-destino"></div>
+            <div class="form-group"><label>Data Ida</label><input type="date" id="p-data"></div>
+            <div class="form-group"><label>Motivo</label><select id="p-motivo"><option>CDTJ</option><option>Selo Lumen</option><option>Transferência</option></select></div>
           </div>
-          <button class="btn" style="margin-top:20px" onclick="salvar()">Enviar</button>
+          <button class="btn btn-primary" style="margin-top:20px" onclick="salvarViagem()">Enviar para Aprovação</button>
         </div>
       </section>
 
       <section id="page-gestao" class="page">
-        <div class="card">
-          <h2>Aprovações Pendentes</h2>
-          <div id="lista-pendentes">Carregando...</div>
+        <div class="card" style="overflow-x:auto">
+          <table style="width:100%; border-collapse:collapse">
+            <thead>
+              <tr style="text-align:left; background:var(--lumen-lt)">
+                <th style="padding:12px">Data</th><th style="padding:12px">Passageiro</th><th>Rota</th><th>Status</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="lista-gestao"></tbody>
+          </table>
         </div>
       </section>
 
       <section id="page-indicadores" class="page">
-        <div class="card">
-          <h2>Resumo Financeiro</h2>
-          <div id="indicadores-vazios">Cadastre passagens para ver os gráficos.</div>
-          <canvas id="meuGrafico"></canvas>
+        <div class="form-grid">
+          <div class="card"><h3>Gastos por Motivo</h3><canvas id="chartMotivo"></canvas></div>
+          <div class="card"><h3>Gastos Mensais</h3><canvas id="chartMensal"></canvas></div>
         </div>
       </section>
-
     </div>
   </main>
 
   <script>
+    // CONFIGURAÇÃO DO FIREBASE
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyCJrEyqTInN2YzEwO1eOFibOTpj2Tj-LCQ",
       authDomain: "automacao-logistica2040.firebaseapp.com",
@@ -88,58 +118,93 @@
       messagingSenderId: "980133097947",
       appId: "1:980133097947:web:4f778878f8e83b97f677fe"
     };
-
     firebase.initializeApp(FIREBASE_CONFIG);
     const db = firebase.firestore();
 
+    // VARIÁVEIS GLOBAIS DE SEGURANÇA
+    let USUARIO_LOGADO = null;
+    let TODAS_PASSAGENS = [];
+
+    // NAVEGAÇÃO
     function goPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       document.getElementById('page-' + id).classList.add('active');
       event.currentTarget.classList.add('active');
+      document.getElementById('page-title').innerText = event.currentTarget.innerText;
     }
 
-    // --- PROTEÇÃO CONTRA O ERRO DE FILTER ---
-    function updateBadge(dados) {
-      // Se dados for null, undefined ou não for array, sai da função sem dar erro
-      if (!dados || !Array.isArray(dados)) return;
-
-      try {
-        const pendentes = dados.filter(item => item && item.status === 'Pendente');
-        console.log("Pendentes encontrados:", pendentes.length);
-      } catch (e) {
-        console.error("Erro ao filtrar badges:", e);
-      }
-    }
-
-    async function salvar() {
-      const p = {
-        nome: document.getElementById('f-nome').value,
-        origem: document.getElementById('f-origem').value,
-        destino: document.getElementById('f-destino').value,
-        data: document.getElementById('f-data').value,
+    // SALVAR VIAGEM
+    async function salvarViagem() {
+      const nova = {
+        passageiro: document.getElementById('p-nome').value,
+        tipo: document.getElementById('p-tipo').value,
+        origem: document.getElementById('p-origem').value,
+        destino: document.getElementById('p-destino').value,
+        data: document.getElementById('p-data').value,
+        motivo: document.getElementById('p-motivo').value,
         status: 'Pendente',
         valor: 0,
-        criadoEm: new Date()
+        solicitante: USUARIO_LOGADO ? USUARIO_LOGADO.email : 'anônimo',
+        criadoEm: new Date().toISOString()
       };
-      await db.collection('passagens').add(p);
-      alert('Enviado!');
-      location.reload(); // Recarrega para limpar tudo
+
+      if(!nova.passageiro || !nova.data) return alert('Preencha os campos obrigatórios!');
+
+      await db.collection('passagens').add(nova);
+      alert('Solicitação enviada com sucesso!');
+      location.reload();
     }
 
-    // Escuta os dados em tempo real com proteção
-    db.collection('passagens').onSnapshot(snap => {
-      const lista = [];
-      snap.forEach(doc => lista.push({ id: doc.id, ...doc.data() }));
-      
-      // Só chama as funções se houver lista
-      if (lista.length >= 0) {
-        updateBadge(lista);
-      }
-    }, err => {
-      console.log("Aguardando permissões ou dados...");
-    });
+    // CARREGAR DADOS EM TEMPO REAL (BLINDADO CONTRA ERROS)
+    function initData() {
+      db.collection('passagens').orderBy('criadoEm', 'desc').onSnapshot(snap => {
+        TODAS_PASSAGENS = [];
+        snap.forEach(doc => TODAS_PASSAGENS.push({id: doc.id, ...doc.data()}));
+        
+        renderizarGestao();
+        renderizarGraficos();
+      }, err => console.log("Erro ao ler dados: ", err));
+    }
 
+    function renderizarGestao() {
+      const tbody = document.getElementById('lista-gestao');
+      if(!tbody) return;
+      tbody.innerHTML = '';
+
+      // PROTEÇÃO: Só filtra se houver dados
+      const dados = TODAS_PASSAGENS || [];
+
+      dados.forEach(p => {
+        tbody.innerHTML += `
+          <tr style="border-bottom:1px solid #eee">
+            <td style="padding:12px">${new Date(p.data).toLocaleDateString('pt-BR')}</td>
+            <td>${p.passageiro}</td>
+            <td>${p.origem} > ${p.destino}</td>
+            <td><span class="status-badge status-${p.status.toLowerCase()}">${p.status}</span></td>
+            <td>
+              <button class="btn" onclick="alterarStatus('${p.id}', 'Aprovado')" style="color:green">✔</button>
+              <button class="btn" onclick="alterarStatus('${p.id}', 'Reprovado')" style="color:red">✖</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function alterarStatus(id, novoStatus) {
+      const valor = novoStatus === 'Aprovado' ? prompt('Insira o valor da passagem:') : 0;
+      await db.collection('passagens').doc(id).update({ 
+        status: novoStatus,
+        valor: Number(valor) || 0
+      });
+    }
+
+    function renderizarGraficos() {
+      // Aqui entraria a lógica de Chart.js igual ao seu sistema de logística
+      console.log("Indicadores prontos para processar", TODAS_PASSAGENS.length, "registros.");
+    }
+
+    window.onload = initData;
   </script>
 </body>
 </html>
