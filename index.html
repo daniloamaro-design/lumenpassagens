@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumen Passagens — Gestão de Viagens</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+    /* ... (Mantenha as variáveis :root e estilos de botões/cards do arquivo original) ... */
+    :root { --lumen: #003875; --accent: #FFD700; --bg: #F0F3FA; }
+    /* Adicionando campo de upload */
+    .file-upload { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; }
+    .file-upload:hover { border-color: var(--lumen); background: var(--lumen-lt); }
+  </style>
+</head>
+<body>
+
+<div id="app-screen">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Viagens</div>
+      <button class="sidebar-item active" onclick="goPage('nova-passagem')">Solicitar Passagem</button>
+      <button class="sidebar-item" onclick="goPage('minhas-viagens')">Minhas Viagens</button>
+      <button class="sidebar-item" id="menu-admin" style="display:none;" onclick="goPage('gestao-viagens')">Gestão (Admin)</button>
+      <button class="sidebar-item" id="menu-financeiro" style="display:none;" onclick="goPage('financeiro')">Indicadores Financeiros</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div id="page-nova-passagem" class="page active">
+      <div class="page-header">
+        <h1 class="page-title">Nova Solicitação de Passagem</h1>
+      </div>
+      
+      <div class="card">
+        <div class="card-body">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="form-group">
+              <label class="form-label">Tipo de Transporte</label>
+              <select id="tipo-transporte" class="form-select">
+                <option value="onibus">Ônibus</option>
+                <option value="aviao">Avião</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Passageiro (Nome Completo)</label>
+              <input type="text" id="passageiro-nome" class="form-input" placeholder="Nome como no RG">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Origem (Cidade - UF)</label>
+              <input type="text" id="local-saida" class="form-input" placeholder="Ex: Fortaleza - CE">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Destino (Cidade - UF)</label>
+              <input type="text" id="local-destino" class="form-input" placeholder="Ex: São Paulo - SP">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Data de Saída</label>
+              <input type="date" id="data-saida" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Turno Preferencial</label>
+              <select id="turno-pref" class="form-select">
+                <option value="manha">Manhã</option>
+                <option value="tarde">Tarde</option>
+                <option value="noite">Noite</option>
+                <option value="madrugada">Madrugada</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Motivo da Viagem</label>
+              <select id="motivo" class="form-select">
+                <option value="CDTJ">CDTJ</option>
+                <option value="TRANSFERENCIA">Transferência</option>
+                <option value="VISITA_FAMILIA">Visitar a Família</option>
+                <option value="RETIRO">Retiros</option>
+                <option value="SELO_LUMEN">Selo Lumen</option>
+                <option value="OUTROS">Outros</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bagagem</label>
+              <select id="bagagem" class="form-select">
+                <option value="mao">Apenas mão (10kg)</option>
+                <option value="despachada">Despachada (23kg)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Chave PIX para Alimentação (Opcional)</label>
+              <input type="text" id="chave-pix" class="form-input" placeholder="CPF, E-mail ou Celular">
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          
+          <div id="section-orcamentos" style="display:none;">
+            <h3 class="sidebar-section-title">Orçamentos Manuais (Até 3)</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+              <input type="number" id="orc-1" class="form-input" placeholder="Valor Opção 1">
+              <input type="number" id="orc-2" class="form-input" placeholder="Valor Opção 2">
+              <input type="number" id="orc-3" class="form-input" placeholder="Valor Opção 3">
+            </div>
+          </div>
+
+          <button class="btn btn-primary mt-16" onclick="salvarSolicitacao()">Enviar para Aprovação</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// ⚙️  CONFIGURAÇÃO — PREENCHA ANTES DE USAR
+// ─────────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCJrEyqTInN2YzEwO1eOFibOTpj2Tj-LCQ",
+  authDomain:        "automacao-logistica2040.firebaseapp.com",
+  projectId:         "automacao-logistica2040",
+  storageBucket:     "automacao-logistica2040.firebasestorage.app",
+  messagingSenderId: "980133097947",
+  appId:             "1:980133097947:web:4f778878f8e83b97f677fe"
+};
+</script>
+</body>
+</html>
