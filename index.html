@@ -12,125 +12,146 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
-    /* ... (Mantenha as variáveis :root e estilos de botões/cards do arquivo original) ... */
-    :root { --lumen: #003875; --accent: #FFD700; --bg: #F0F3FA; }
-    /* Adicionando campo de upload */
-    .file-upload { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; }
-    .file-upload:hover { border-color: var(--lumen); background: var(--lumen-lt); }
+    :root { 
+      --lumen: #003875; 
+      --lumen-light: #e6f0fa;
+      --accent: #FFD700; 
+      --bg: #F0F3FA; 
+      --border: #ddd;
+    }
+    body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; }
+    
+    .sidebar { width: 250px; background: white; border-right: 1px solid var(--border); padding: 20px; }
+    .sidebar-section-title { font-weight: bold; color: var(--lumen); margin: 20px 0 10px; font-size: 12px; text-transform: uppercase; }
+    .sidebar-item { width: 100%; text-align: left; padding: 10px; border: none; background: none; cursor: pointer; border-radius: 5px; margin-bottom: 5px; }
+    .sidebar-item:hover { background: var(--lumen-light); }
+    .sidebar-item.active { background: var(--lumen); color: white; }
+
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+    .form-label { font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+    .form-input, .form-select { padding: 10px; border: 1px solid var(--border); border-radius: 4px; }
+    .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-primary { background: var(--lumen); color: white; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .divider { height: 1px; background: #eee; margin: 20px 0; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-<div id="app-screen">
+<div id="app-screen" style="display:flex; width:100%;">
   <nav class="sidebar">
+    <div style="font-weight: bold; color: var(--lumen); font-size: 18px; margin-bottom: 30px;">LUMEN PASSAGENS</div>
     <div class="sidebar-section">
       <div class="sidebar-section-title">Viagens</div>
       <button class="sidebar-item active" onclick="goPage('nova-passagem')">Solicitar Passagem</button>
       <button class="sidebar-item" onclick="goPage('minhas-viagens')">Minhas Viagens</button>
-      <button class="sidebar-item" id="menu-admin" style="display:none;" onclick="goPage('gestao-viagens')">Gestão (Admin)</button>
-      <button class="sidebar-item" id="menu-financeiro" style="display:none;" onclick="goPage('financeiro')">Indicadores Financeiros</button>
+      <button class="sidebar-item" id="menu-admin" onclick="goPage('gestao-viagens')">Gestão (Admin)</button>
+      <button class="sidebar-item" id="menu-financeiro" onclick="goPage('financeiro')">Indicadores Financeiros</button>
     </div>
   </nav>
 
   <main class="main-content">
     <div id="page-nova-passagem" class="page active">
-      <div class="page-header">
-        <h1 class="page-title">Nova Solicitação de Passagem</h1>
-      </div>
-      
+      <h1 class="page-title">Nova Solicitação</h1>
       <div class="card">
-        <div class="card-body">
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div class="form-group">
-              <label class="form-label">Tipo de Transporte</label>
-              <select id="tipo-transporte" class="form-select">
-                <option value="onibus">Ônibus</option>
-                <option value="aviao">Avião</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Passageiro (Nome Completo)</label>
-              <input type="text" id="passageiro-nome" class="form-input" placeholder="Nome como no RG">
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Origem (Cidade - UF)</label>
-              <input type="text" id="local-saida" class="form-input" placeholder="Ex: Fortaleza - CE">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Destino (Cidade - UF)</label>
-              <input type="text" id="local-destino" class="form-input" placeholder="Ex: São Paulo - SP">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Data de Saída</label>
-              <input type="date" id="data-saida" class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Turno Preferencial</label>
-              <select id="turno-pref" class="form-select">
-                <option value="manha">Manhã</option>
-                <option value="tarde">Tarde</option>
-                <option value="noite">Noite</option>
-                <option value="madrugada">Madrugada</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Motivo da Viagem</label>
-              <select id="motivo" class="form-select">
-                <option value="CDTJ">CDTJ</option>
-                <option value="TRANSFERENCIA">Transferência</option>
-                <option value="VISITA_FAMILIA">Visitar a Família</option>
-                <option value="RETIRO">Retiros</option>
-                <option value="SELO_LUMEN">Selo Lumen</option>
-                <option value="OUTROS">Outros</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Bagagem</label>
-              <select id="bagagem" class="form-select">
-                <option value="mao">Apenas mão (10kg)</option>
-                <option value="despachada">Despachada (23kg)</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="grid-column: span 2;">
-              <label class="form-label">Chave PIX para Alimentação (Opcional)</label>
-              <input type="text" id="chave-pix" class="form-input" placeholder="CPF, E-mail ou Celular">
-            </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+          <div class="form-group">
+            <label class="form-label">Tipo de Transporte</label>
+            <select id="tipo-transporte" class="form-select">
+              <option value="onibus">Ônibus</option>
+              <option value="aviao">Avião</option>
+            </select>
           </div>
-
-          <div class="divider"></div>
-          
-          <div id="section-orcamentos" style="display:none;">
-            <h3 class="sidebar-section-title">Orçamentos Manuais (Até 3)</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-              <input type="number" id="orc-1" class="form-input" placeholder="Valor Opção 1">
-              <input type="number" id="orc-2" class="form-input" placeholder="Valor Opção 2">
-              <input type="number" id="orc-3" class="form-input" placeholder="Valor Opção 3">
-            </div>
+          <div class="form-group">
+            <label class="form-label">Passageiro (Nome Completo)</label>
+            <input type="text" id="passageiro-nome" class="form-input" placeholder="Ex: Danilo Amaro">
           </div>
-
-          <button class="btn btn-primary mt-16" onclick="salvarSolicitacao()">Enviar para Aprovação</button>
+          <div class="form-group">
+            <label class="form-label">Origem (Cidade - UF)</label>
+            <input type="text" id="local-saida" class="form-input" placeholder="Fortaleza - CE">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destino (Cidade - UF)</label>
+            <input type="text" id="local-destino" class="form-input" placeholder="São Paulo - SP">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de Saída</label>
+            <input type="date" id="data-saida" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Turno Preferencial</label>
+            <select id="turno-pref" class="form-select">
+              <option value="manha">Manhã</option>
+              <option value="tarde">Tarde</option>
+              <option value="noite">Noite</option>
+            </select>
+          </div>
         </div>
+        <button class="btn btn-primary" style="margin-top:20px" onclick="salvarSolicitacao()">Enviar para Aprovação</button>
       </div>
     </div>
+
+    <div id="page-minhas-viagens" class="page"><h1>Minhas Viagens</h1><div class="card">Lista em breve...</div></div>
+    <div id="page-gestao-viagens" class="page"><h1>Gestão Admin</h1><div class="card">Aprovações aqui...</div></div>
+    <div id="page-financeiro" class="page"><h1>Indicadores</h1><div class="card">Gráficos aqui...</div></div>
   </main>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// ⚙️  CONFIGURAÇÃO — PREENCHA ANTES DE USAR
-// ─────────────────────────────────────────────
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyCJrEyqTInN2YzEwO1eOFibOTpj2Tj-LCQ",
-  authDomain:        "automacao-logistica2040.firebaseapp.com",
-  projectId:         "automacao-logistica2040",
-  storageBucket:     "automacao-logistica2040.firebasestorage.app",
+  apiKey: "AIzaSyCJrEyqTInN2YzEwO1eOFibOTpj2Tj-LCQ",
+  authDomain: "automacao-logistica2040.firebaseapp.com",
+  projectId: "automacao-logistica2040",
+  storageBucket: "automacao-logistica2040.firebasestorage.app",
   messagingSenderId: "980133097947",
-  appId:             "1:980133097947:web:4f778878f8e83b97f677fe"
+  appId: "1:980133097947:web:4f778878f8e83b97f677fe"
 };
+
+// Inicialização
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// Função para mudar de página (CORRIGE ERRO DE CLIQUE)
+function goPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  
+  const target = document.getElementById('page-' + pageId);
+  if(target) target.classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// Função para salvar (CORRIGE ERRO DE ENVIO)
+async function salvarSolicitacao() {
+  const dados = {
+    tipo: document.getElementById('tipo-transporte').value,
+    passageiro: document.getElementById('passageiro-nome').value,
+    origem: document.getElementById('local-saida').value,
+    destino: document.getElementById('local-destino').value,
+    data: document.getElementById('data-saida').value,
+    status: 'Pendente',
+    data_criacao: new Date().toISOString()
+  };
+
+  try {
+    await db.collection('passagens').add(dados);
+    alert('Solicitação enviada com sucesso!');
+  } catch (e) {
+    console.error(e);
+    alert('Erro ao salvar no banco de dados.');
+  }
+}
+
+// CORREÇÃO DOS ERROS DE FILTER/REDUCE (Tratamento de dados vazios)
+function updateBadge(data) {
+  const lista = data || []; // Se data for undefined, vira lista vazia
+  const pendentes = lista.filter(item => item && item.status === 'Pendente');
+  console.log('Pendentes:', pendentes.length);
+}
 </script>
 </body>
 </html>
