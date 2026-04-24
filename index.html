@@ -952,7 +952,7 @@
 // ─── FIREBASE CONFIG ───────────────────────────────────────────────
 // EmailJS init — substitua pela sua Public Key
 if (typeof emailjs !== 'undefined') {
-  emailjs.init('YOUR_PUBLIC_KEY'); // <-- substitua pela sua Public Key do EmailJS
+  emailjs.init('UHnFUf7wjvrxJa2d2'); // <-- substitua pela sua Public Key do EmailJS
 }
 
 const firebaseConfig = {
@@ -1726,9 +1726,9 @@ async function sendPurchaseEmail(params) {
   };
 
   // EmailJS send — configure your IDs in the constants below:
-  const EMAILJS_SERVICE_ID  = 'service_lumen';   // <-- substitua pelo seu Service ID
-  const EMAILJS_TEMPLATE_ID = 'template_lumen';  // <-- substitua pelo seu Template ID
-  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY'; // <-- substitua pela sua Public Key
+  const EMAILJS_SERVICE_ID  = 'service_3j9tbrr';   // <-- substitua pelo seu Service ID
+  const EMAILJS_TEMPLATE_ID = 'template_p1hszi8';  // <-- substitua pelo seu Template ID
+  const EMAILJS_PUBLIC_KEY  = 'UHnFUf7wjvrxJa2d2'; // <-- substitua pela sua Public Key
 
   await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
 }
