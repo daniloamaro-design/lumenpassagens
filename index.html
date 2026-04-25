@@ -198,6 +198,35 @@
     .online-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1.5px solid var(--border); color: var(--lumen); background: var(--lumen-lt); text-decoration: none; cursor: pointer; transition: all 0.15s; }
     .online-link:hover { background: var(--lumen); color: #fff; border-color: var(--lumen); }
 
+    /* ─── API PRICE SEARCH ─── */
+    .api-search-panel { background: linear-gradient(135deg, #f0f6ff 0%, #e8f4ff 100%); border: 1.5px solid #b8d4f8; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .api-search-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
+    .api-search-title { font-size: 13px; font-weight: 700; color: var(--lumen); display: flex; align-items: center; gap: 6px; }
+    .api-badge { font-size: 9px; font-weight: 800; background: var(--lumen); color: #fff; padding: 2px 6px; border-radius: 20px; letter-spacing: 0.5px; }
+    .api-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+    .api-result-card { background: #fff; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; transition: all 0.2s; position: relative; overflow: hidden; }
+    .api-result-card:hover { border-color: var(--lumen); box-shadow: 0 4px 12px rgba(0,56,117,0.12); transform: translateY(-1px); }
+    .api-result-card.cheapest { border-color: var(--ok); background: linear-gradient(135deg, #f0fff4 0%, #e8f8ee 100%); }
+    .api-result-card.cheapest::before { content: '💰 MELHOR PREÇO'; position: absolute; top: 6px; right: 6px; font-size: 8px; font-weight: 800; background: var(--ok); color: #fff; padding: 2px 6px; border-radius: 10px; }
+    .api-result-airline { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .api-result-price { font-size: 20px; font-weight: 800; color: var(--lumen); line-height: 1.1; margin: 4px 0; }
+    .api-result-card.cheapest .api-result-price { color: var(--ok); }
+    .api-result-detail { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+    .api-result-source { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 5px; }
+    .api-loading { display: flex; align-items: center; gap: 10px; padding: 20px; color: var(--text-muted); font-size: 13px; }
+    .api-spinner { width: 20px; height: 20px; border: 2.5px solid var(--lumen-lt); border-top-color: var(--lumen); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .api-error { background: var(--warn-bg); border: 1px solid #f9d5a0; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--warn); display: flex; align-items: center; gap: 8px; }
+    .api-no-results { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; }
+    .api-tab-bar { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .api-tab { padding: 5px 12px; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -9px; transition: all 0.15s; }
+    .api-tab.active { color: var(--lumen); border-bottom-color: var(--lumen); background: var(--lumen-lt); }
+    .api-compare-bar { background: var(--lumen-lt); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 12px; color: var(--lumen); display: none; }
+    .api-compare-bar.visible { display: block; }
+    .api-search-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--lumen); color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .api-search-btn:hover { background: var(--lumen-mid); }
+    .api-search-btn:disabled { opacity: 0.6; cursor: default; }
+
     /* Image upload area */
     .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s; }
     .upload-area:hover, .upload-area.drag { border-color: var(--lumen); background: var(--lumen-lt); }
@@ -374,6 +403,11 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar">
+    <div class="sidebar-section admin-only" id="api-config-notice" style="background:var(--warn-bg);border-radius:8px;padding:10px;margin-bottom:8px;display:none">
+      <div style="font-size:10px;font-weight:700;color:var(--warn);margin-bottom:4px">⚙️ APIs não configuradas</div>
+      <div style="font-size:10px;color:var(--warn)">Configure Amadeus e ClickBus no código para busca real de preços.</div>
+    </div>
+
     <div class="sidebar-section admin-only">
       <div class="sidebar-section-title">Gestão</div>
       <button class="sidebar-item" onclick="goPage('dashboard')">
@@ -1171,6 +1205,11 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('app-screen').style.display  = 'block';
   document.getElementById('topbar-user').textContent   = currentUser.name;
   applyRoleVisibility();
+  // Show API config notice if credentials not set
+  if (currentRole === 'admin' && (AMADEUS_CLIENT_ID === 'YOUR_AMADEUS_CLIENT_ID' || CLICKBUS_API_URL === 'YOUR_CLICKBUS_PARTNER_ENDPOINT')) {
+    const notice = document.getElementById('api-config-notice');
+    if (notice) notice.style.display = '';
+  }
   await loadFornecedoresData();
   startListener();
   goPage(currentRole === 'admin' ? 'dashboard' : 'nova');
@@ -1593,57 +1632,47 @@ function openDetalhes(id) {
     html += `<div class="media-chip" style="margin-bottom:12px">📊 Média histórica neste trajeto: <strong>${fmtBRL(media)}</strong></div>`;
   }
 
-  // Links online (admin)
+  // API Price Search Panel (admin)
   if (isAdmin) {
     const isAviao = s.tipo === 'aviao';
-    html += `<div class="section-title">Orçamento Online</div>`;
-    html += `<div style="margin-bottom:10px">`;
+    html += `<div class="section-title">Pesquisa de Preços em Tempo Real</div>`;
+    html += `<div class="api-search-panel">
+      <div class="api-search-header">
+        <div class="api-search-title">
+          ${isAviao ? '✈️ Busca via Amadeus API' : '🚌 Busca via ClickBus + Amadeus'}
+          <span class="api-badge">API</span>
+        </div>
+        <button class="api-search-btn" id="api-btn-${s.id}" onclick="searchApiPrices('${s.id}')">
+          🔍 Buscar Preços Agora
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">
+        Trajeto: <strong>${esc(s.origem)}</strong> → <strong>${esc(s.destino)}</strong> · 
+        Saída: <strong>${fmtDate(s.saida)}</strong>
+        ${s.retorno ? ` · Retorno: <strong>${fmtDate(s.retorno)}</strong>` : ''}
+      </div>
+      <div id="api-results-${s.id}">
+        ${(s.apiPrecos && s.apiPrecos.length) ? renderApiResultsHtml(s.apiPrecos, s.valorFinal) : '<div style="font-size:12px;color:var(--text-muted);padding:8px 0">Clique em "Buscar Preços" para consultar as APIs e ver opções disponíveis com empresa, preço e horários.</div>'}
+      </div>
+      <div id="api-compare-${s.id}" class="api-compare-bar ${(s.apiPrecos && s.valorFinal) ? 'visible' : ''}">
+        ${(s.apiPrecos && s.apiPrecos.length && s.valorFinal) ? buildCompareMsg(s.apiPrecos, s.valorFinal) : ''}
+      </div>
+    </div>`;
+
+    // Manual price inputs for reference (compact)
+    html += `<div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Links de Referência Manual</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">`;
     if (isAviao) {
-      const sites = [
-        { label:'Decolar', url:'https://www.decolar.com/passagens-aereas/', key:'decolar' },
-        { label:'GOL', url:'https://www.voegol.com.br/', key:'gol' },
-        { label:'LATAM', url:'https://www.latamairlines.com/br/', key:'latam' },
-        { label:'Azul', url:'https://www.voeazul.com.br/', key:'azul' },
-        { label:'Google Flights', url:'https://www.google.com/travel/flights', key:'gflights' },
-        { label:'123Milhas', url:'https://123milhas.com/', key:'m123' }
-      ];
-      html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">`;
-      sites.forEach(site => {
-        const priceVal = (s.onlinePrecos||{})[site.key] ? fmtBRL((s.onlinePrecos||{})[site.key]) : '';
-        html += `<div style="border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;min-width:160px;background:var(--bg)">
-          <a href="${site.url}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--lumen);text-decoration:none">🔗 ${site.label}</a>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
-            <span style="font-size:10px;color:var(--text-muted);font-weight:600">R$</span>
-            <input class="form-input" id="online-preco-${site.key}" type="number" step="0.01" min="0" value="${(s.onlinePrecos||{})[site.key]||''}" placeholder="0,00" style="padding:4px 7px;font-size:12px;height:28px">
-            <button class="btn btn-secondary btn-sm" style="padding:4px 8px;font-size:10px" onclick="saveOnlinePreco('${s.id}','${site.key}')">💾</button>
-          </div>
-          ${priceVal ? `<div style="font-size:11px;color:var(--ok);font-weight:700;margin-top:4px">✓ ${priceVal}</div>` : ''}
-        </div>`;
+      [['Decolar','https://www.decolar.com/passagens-aereas/'],['GOL','https://www.voegol.com.br/'],['LATAM','https://www.latamairlines.com/br/'],['Azul','https://www.voeazul.com.br/'],['Google Flights','https://www.google.com/travel/flights']].forEach(([label,url]) => {
+        html += `<a class="online-link" href="${url}" target="_blank" rel="noopener">🔗 ${label}</a>`;
       });
-      html += `</div>`;
     } else {
-      const sites = [
-        { label:'ClickBus', url:'https://www.clickbus.com.br/', key:'clickbus' },
-        { label:'Buser', url:'https://www.buser.com.br/', key:'buser' },
-        { label:'RedeBus', url:'https://www.redebuspassagens.com.br/', key:'redebus' },
-        { label:'Ticket Bus', url:'https://www.ticketbus.com.br/', key:'ticketbus' }
-      ];
-      html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">`;
-      sites.forEach(site => {
-        const priceVal = (s.onlinePrecos||{})[site.key] ? fmtBRL((s.onlinePrecos||{})[site.key]) : '';
-        html += `<div style="border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;min-width:160px;background:var(--bg)">
-          <a href="${site.url}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--lumen);text-decoration:none">🔗 ${site.label}</a>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
-            <span style="font-size:10px;color:var(--text-muted);font-weight:600">R$</span>
-            <input class="form-input" id="online-preco-${site.key}" type="number" step="0.01" min="0" value="${(s.onlinePrecos||{})[site.key]||''}" placeholder="0,00" style="padding:4px 7px;font-size:12px;height:28px">
-            <button class="btn btn-secondary btn-sm" style="padding:4px 8px;font-size:10px" onclick="saveOnlinePreco('${s.id}','${site.key}')">💾</button>
-          </div>
-          ${priceVal ? `<div style="font-size:11px;color:var(--ok);font-weight:700;margin-top:4px">✓ ${priceVal}</div>` : ''}
-        </div>`;
+      [['ClickBus','https://www.clickbus.com.br/'],['Buser','https://www.buser.com.br/'],['RedeBus','https://www.redebuspassagens.com.br/']].forEach(([label,url]) => {
+        html += `<a class="online-link" href="${url}" target="_blank" rel="noopener">🔗 ${label}</a>`;
       });
-      html += `</div>`;
     }
-    html += `</div>`;
+    html += `</div></div>`;
   }
 
   // Orçamentos
@@ -1850,6 +1879,235 @@ async function sendPurchaseEmail(params) {
   const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY'; // <-- substitua pela sua Public Key
 
   await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
+}
+
+// ─── API PRICE SEARCH (Amadeus + ClickBus) ───────────────────────
+// Configuração das APIs — substitua pelas suas credenciais
+const AMADEUS_CLIENT_ID     = 'YOUR_AMADEUS_CLIENT_ID';     // Cadastre em developers.amadeus.com
+const AMADEUS_CLIENT_SECRET = 'YOUR_AMADEUS_CLIENT_SECRET';
+// ClickBus: acesso via parceria B2B — substitua pelo endpoint fornecido
+const CLICKBUS_API_URL      = 'YOUR_CLICKBUS_PARTNER_ENDPOINT';
+
+// Mapa de cidade → código IATA (expanda conforme necessário)
+const CITY_TO_IATA = {
+  'fortaleza': 'FOR', 'são paulo': 'GRU', 'sao paulo': 'GRU', 'sp': 'GRU',
+  'rio de janeiro': 'GIG', 'rj': 'GIG', 'brasília': 'BSB', 'brasilia': 'BSB',
+  'salvador': 'SSA', 'belo horizonte': 'CNF', 'recife': 'REC', 'manaus': 'MAO',
+  'curitiba': 'CWB', 'porto alegre': 'POA', 'belém': 'BEL', 'belem': 'BEL',
+  'natal': 'NAT', 'maceió': 'MCZ', 'maceio': 'MCZ', 'goiânia': 'GYN', 'goiania': 'GYN',
+  'florianópolis': 'FLN', 'florianopolis': 'FLN', 'vitória': 'VIX', 'vitoria': 'VIX',
+  'campo grande': 'CGR', 'cuiabá': 'CGB', 'cuiaba': 'CGB', 'macapá': 'MCP',
+  'porto velho': 'PVH', 'boa vista': 'BVB', 'palmas': 'PMW', 'aracaju': 'AJU',
+  'joão pessoa': 'JPA', 'joao pessoa': 'JPA', 'teresina': 'THE', 'são luís': 'SLZ',
+  'são luis': 'SLZ', 'uberlândia': 'UDI', 'uberlandia': 'UDI', 'campinas': 'VCP',
+  'londrina': 'LDB', 'maringá': 'MGF', 'maringa': 'MGF', 'ribeirão preto': 'RAO',
+  'ribeirao preto': 'RAO', 'juiz de fora': 'IZA'
+};
+
+function extractIATA(cityStr) {
+  if (!cityStr) return null;
+  const clean = cityStr.toLowerCase().split(' - ')[0].trim().replace(/\(.*?\)/g,'').trim();
+  for (const [key, iata] of Object.entries(CITY_TO_IATA)) {
+    if (clean.includes(key) || key.includes(clean)) return iata;
+  }
+  return null;
+}
+
+let amadeusToken = null;
+let amadeusTokenExp = 0;
+
+async function getAmadeusToken() {
+  if (amadeusToken && Date.now() < amadeusTokenExp) return amadeusToken;
+  if (AMADEUS_CLIENT_ID === 'YOUR_AMADEUS_CLIENT_ID') return null;
+  try {
+    const resp = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=client_credentials&client_id=${AMADEUS_CLIENT_ID}&client_secret=${AMADEUS_CLIENT_SECRET}`
+    });
+    const data = await resp.json();
+    amadeusToken = data.access_token;
+    amadeusTokenExp = Date.now() + (data.expires_in - 60) * 1000;
+    return amadeusToken;
+  } catch(e) { console.warn('Amadeus auth error:', e); return null; }
+}
+
+async function searchAmadeusFlights(origin, destination, date, returnDate) {
+  const token = await getAmadeusToken();
+  if (!token) return { source: 'amadeus', error: 'API não configurada', demo: true };
+  const originIATA = extractIATA(origin);
+  const destIATA   = extractIATA(destination);
+  if (!originIATA || !destIATA) return { source: 'amadeus', error: `Não foi possível identificar o código IATA para "${origin}" ou "${destination}". Verifique o formato cidade-estado.`, demo: false };
+  try {
+    let url = `https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${originIATA}&destinationLocationCode=${destIATA}&departureDate=${date}&adults=1&currencyCode=BRL&max=6`;
+    if (returnDate) url += `&returnDate=${returnDate}`;
+    const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await resp.json();
+    if (data.errors) return { source: 'amadeus', error: data.errors[0]?.detail || 'Erro na API Amadeus', demo: false };
+    return { source: 'amadeus', results: (data.data||[]).map(offer => {
+      const seg = offer.itineraries[0].segments[0];
+      const price = parseFloat(offer.price.total);
+      return {
+        airline: seg.carrierCode,
+        flightNum: seg.carrierCode + seg.number,
+        departure: seg.departure.at ? seg.departure.at.slice(11,16) : '—',
+        arrival: seg.arrival.at ? seg.arrival.at.slice(11,16) : '—',
+        duration: offer.itineraries[0].duration?.replace('PT','').replace('H','h').replace('M','min') || '—',
+        stops: offer.itineraries[0].segments.length - 1,
+        price,
+        seats: offer.numberOfBookableSeats || null,
+        source: 'Amadeus'
+      };
+    })};
+  } catch(e) { return { source: 'amadeus', error: 'Erro de conexão com Amadeus: ' + e.message, demo: false }; }
+}
+
+async function searchClickBus(origin, destination, date) {
+  // ClickBus requer parceria B2B. Esta função demonstra a estrutura da chamada.
+  // Quando configurado, substitua a lógica abaixo com o endpoint real.
+  if (CLICKBUS_API_URL === 'YOUR_CLICKBUS_PARTNER_ENDPOINT') {
+    return { source: 'clickbus', error: 'API não configurada', demo: true };
+  }
+  try {
+    const resp = await fetch(`${CLICKBUS_API_URL}/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer YOUR_CLICKBUS_TOKEN' },
+      body: JSON.stringify({ from: origin, to: destination, date, passengers: 1 })
+    });
+    const data = await resp.json();
+    return { source: 'clickbus', results: (data.trips||[]).map(t => ({
+      airline: t.company || t.carrier,
+      departure: t.departureTime,
+      arrival: t.arrivalTime,
+      duration: t.duration,
+      stops: 0,
+      price: parseFloat(t.fare || t.price),
+      seats: t.availableSeats,
+      serviceClass: t.serviceClass || 'Convencional',
+      source: 'ClickBus'
+    }))};
+  } catch(e) { return { source: 'clickbus', error: 'Erro ClickBus: ' + e.message, demo: false }; }
+}
+
+function buildDemoResults(tipo, origem, destino) {
+  // Resultados demo para quando as APIs não estão configuradas
+  const isAviao = tipo === 'aviao';
+  if (isAviao) {
+    return [
+      { airline: 'LATAM', flightNum: 'LA3040', departure: '07:30', arrival: '10:15', duration: '2h45min', stops: 0, price: 487.90, seats: 12, source: 'Demo — configure Amadeus API' },
+      { airline: 'GOL', flightNum: 'G31782', departure: '10:50', arrival: '13:40', duration: '2h50min', stops: 0, price: 412.00, seats: 5, source: 'Demo — configure Amadeus API' },
+      { airline: 'Azul', flightNum: 'AD4400', departure: '15:00', arrival: '18:25', duration: '3h25min', stops: 1, price: 358.50, seats: 18, source: 'Demo — configure Amadeus API' },
+      { airline: 'GOL', flightNum: 'G32210', departure: '19:30', arrival: '22:10', duration: '2h40min', stops: 0, price: 529.00, seats: 3, source: 'Demo — configure Amadeus API' }
+    ];
+  } else {
+    return [
+      { airline: 'Expresso Guanabara', departure: '06:00', arrival: '22:00', duration: '16h', stops: 0, price: 189.90, seats: 22, serviceClass: 'Leito', source: 'Demo — configure ClickBus API' },
+      { airline: 'Cometa', departure: '08:30', arrival: '00:30', duration: '16h', stops: 0, price: 149.00, seats: 8, serviceClass: 'Convencional', source: 'Demo — configure ClickBus API' },
+      { airline: 'Gontijo', departure: '18:00', arrival: '10:00+1', duration: '16h', stops: 0, price: 175.50, seats: 14, serviceClass: 'Semi-leito', source: 'Demo — configure ClickBus API' },
+    ];
+  }
+}
+
+function renderApiResultsHtml(results, valorFinal) {
+  if (!results || !results.length) return '<div class="api-no-results">Nenhuma opção encontrada para este trajeto e data.</div>';
+  const minPrice = Math.min(...results.map(r => r.price));
+  let html = '<div class="api-results-grid">';
+  results.forEach(r => {
+    const isCheapest = Math.abs(r.price - minPrice) < 0.01;
+    const vsComprado = valorFinal ? (parseFloat(valorFinal) - r.price) : null;
+    html += `<div class="api-result-card ${isCheapest ? 'cheapest' : ''}">
+      <div class="api-result-airline">${esc(r.airline)}</div>
+      ${r.flightNum ? `<div style="font-size:10px;color:var(--text-muted)">${esc(r.flightNum)}</div>` : ''}
+      <div class="api-result-price">${fmtBRL(r.price)}</div>
+      <div class="api-result-detail">
+        ${r.departure && r.arrival ? `🕐 ${esc(r.departure)} → ${esc(r.arrival)}<br>` : ''}
+        ${r.duration ? `⏱ ${esc(r.duration)}<br>` : ''}
+        ${r.stops !== undefined ? `🔄 ${r.stops === 0 ? 'Direto' : r.stops + ' parada(s)'}<br>` : ''}
+        ${r.serviceClass ? `💺 ${esc(r.serviceClass)}<br>` : ''}
+        ${r.seats ? `🎫 ${r.seats} assento(s) disp.<br>` : ''}
+        ${vsComprado !== null ? `<span style="color:${vsComprado>0?'var(--ok)':'var(--danger)'}">vs comprado: ${vsComprado>0?'-':'+'} ${fmtBRL(Math.abs(vsComprado))}</span>` : ''}
+      </div>
+      <div class="api-result-source">${esc(r.source)}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function buildCompareMsg(results, valorFinal) {
+  if (!results || !results.length || !valorFinal) return '';
+  const minApi = Math.min(...results.map(r => r.price));
+  const comprado = parseFloat(valorFinal);
+  const diff = comprado - minApi;
+  if (diff > 0) return `💰 O menor preço encontrado via API (${fmtBRL(minApi)}) está ${fmtBRL(diff)} abaixo do valor pago (${fmtBRL(comprado)}). Esta informação pode servir como referência para próximas compras.`;
+  if (diff < 0) return `✅ Ótima compra! O valor pago (${fmtBRL(comprado)}) foi ${fmtBRL(Math.abs(diff))} menor que a opção mais barata encontrada via API (${fmtBRL(minApi)}).`;
+  return `📊 O valor pago (${fmtBRL(comprado)}) está alinhado com o menor preço encontrado via API.`;
+}
+
+async function searchApiPrices(solId) {
+  const s = allSolicitacoes.find(x => x.id === solId);
+  if (!s) return;
+  const btn = document.getElementById(`api-btn-${solId}`);
+  const container = document.getElementById(`api-results-${solId}`);
+  const compareBar = document.getElementById(`api-compare-${solId}`);
+  if (!container) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Buscando...'; }
+  container.innerHTML = '<div class="api-loading"><div class="api-spinner"></div> Consultando APIs de passagens...</div>';
+  try {
+    let finalResults = [];
+    let errors = [];
+    if (s.tipo === 'aviao') {
+      const amadResult = await searchAmadeusFlights(s.origem, s.destino, s.saida, s.retorno||null);
+      if (amadResult.demo) {
+        finalResults = buildDemoResults('aviao', s.origem, s.destino);
+        errors.push('⚠️ Modo demonstração — configure suas credenciais Amadeus em AMADEUS_CLIENT_ID e AMADEUS_CLIENT_SECRET no código.');
+      } else if (amadResult.error) {
+        errors.push('Amadeus: ' + amadResult.error);
+      } else {
+        finalResults = amadResult.results || [];
+      }
+    } else {
+      const [cbResult, amadResult] = await Promise.all([
+        searchClickBus(s.origem, s.destino, s.saida),
+        searchAmadeusFlights(s.origem, s.destino, s.saida, s.retorno||null)
+      ]);
+      let demo = false;
+      if (cbResult.demo || amadResult.demo) {
+        finalResults = buildDemoResults('onibus', s.origem, s.destino);
+        demo = true;
+        errors.push('⚠️ Modo demonstração — configure as APIs ClickBus e Amadeus no código.');
+      } else {
+        if (cbResult.error) errors.push('ClickBus: ' + cbResult.error);
+        else finalResults = [...finalResults, ...(cbResult.results || [])];
+        if (amadResult.error) errors.push('Amadeus: ' + amadResult.error);
+        else finalResults = [...finalResults, ...(amadResult.results || [])];
+      }
+    }
+    // Sort by price
+    finalResults.sort((a,b) => a.price - b.price);
+    // Save to Firestore
+    if (finalResults.length) {
+      await db.collection('passagens_solicitacoes').doc(solId).update({ apiPrecos: finalResults, apiPrecosAt: new Date().toISOString() });
+      const idx = allSolicitacoes.findIndex(x=>x.id===solId);
+      if (idx >= 0) { allSolicitacoes[idx].apiPrecos = finalResults; allSolicitacoes[idx].apiPrecosAt = new Date().toISOString(); }
+    }
+    let html = '';
+    if (errors.length) html += `<div class="api-error">⚠️ ${errors.join(' | ')}</div>`;
+    html += finalResults.length ? renderApiResultsHtml(finalResults, s.valorFinal) : '<div class="api-no-results">Nenhuma opção encontrada. Verifique o trajeto e a data.</div>';
+    if (finalResults.length) {
+      const lastSearch = new Date().toLocaleString('pt-BR');
+      html += `<div style="font-size:10px;color:var(--text-muted);margin-top:8px">🕐 Última busca: ${lastSearch} · ${finalResults.length} opção(ões) encontrada(s)</div>`;
+    }
+    container.innerHTML = html;
+    if (compareBar && finalResults.length && s.valorFinal) {
+      compareBar.textContent = buildCompareMsg(finalResults, s.valorFinal);
+      compareBar.classList.add('visible');
+    }
+  } catch(e) {
+    container.innerHTML = `<div class="api-error">❌ Erro inesperado: ${e.message}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🔍 Buscar Preços Agora'; }
+  }
 }
 
 // ─── ORÇAMENTOS ONLINE ────────────────────────────────────────────
